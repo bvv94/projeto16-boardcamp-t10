@@ -1,4 +1,5 @@
 import { db } from "../database/database.connection.js"
+import pg from "pg"
 
 export async function getRentals(req, res) {
     try {
@@ -19,8 +20,13 @@ export async function createRentals(req, res) {
         const existGame = await db.query(`SELECT * FROM games WHERE id=$1`, [gameId])
         if ((existCustomer.rows.length === 0) || (existGame.rows.length === 0)) return res.sendStatus(400)
 
-        await db.query(`INSERT INTO rentals (customerId, gameId, daysRented)
-                        VALUES ($1, $2, $3)`, [customerId, gameId, daysRented])
+        const pricePerDay = await db.query(`SELECT * FROM games WHERE id=$1`, [gameId])
+        const originalPrice = daysRented*(pricePerDay.rows[0].pricePerDay)
+
+        await db.query(`INSERT INTO rentals 
+                        ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee")
+                        VALUES ($1, $2, NOW(), $3, null, $4, null)`, 
+                        [customerId, gameId, daysRented, originalPrice])
         res.sendStatus(201)
     }
     catch (err) {

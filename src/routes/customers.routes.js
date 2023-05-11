@@ -5,9 +5,9 @@ import validateSchema from "../middlewares/validadeSchema.middleware.js"
 
 const customersRouter = Router()
 
-customersRouter.get ("/customers", getCustomers)
-customersRouter.get ("/customers/:id", getCustomersById)
-customersRouter.post ("/customers", validateSchema(customerSchema) , createCustomers)
-customersRouter.put ("/customers/:id", updateCustomers)
+customersRouter.get("/customers", getCustomers)
+customersRouter.get("/customers/:id", getCustomersById)
+customersRouter.post("/customers", validateSchema(customerSchema), createCustomers)
+customersRouter.put("/customers/:id", validateSchema(customerSchema), updateCustomers)
 
 export default customersRouter

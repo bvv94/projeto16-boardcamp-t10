@@ -14,7 +14,7 @@ export async function createGames(req, res) {
     const { name, image, stockTotal, pricePerDay } = req.body
 
     try {
-        const games = await db.query(`SELECT * FROM games`)
+        const games = await db.query(`SELECT * FROM games;`)
         const exist = games.rows.find((g) => g.name === name)
         if (exist) return res.status(409).send("Jogo já existe")
 

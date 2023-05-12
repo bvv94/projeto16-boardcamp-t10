@@ -63,10 +63,16 @@ export async function returnRental(req, res) {
     try {
         const exist = await db.query(`SELECT * FROM rentals WHERE id=$1`, [id])
         if (exist.rowCount === 0) return res.sendStatus(404) //se id de aluguel existe
-        if (exist.rows[0].returnDate !== null) return res.sendStatus(400) //aluguel já finalizado
 
         const date = new Date()
-        await db.query(`UPDATE rentals SET "returnDate" = $1 WHERE id=$2`, [date, id])
+        const returnDate = new Date(exist.rows[0].returnDate)
+
+        if (returnDate !== null) return res.sendStatus(400) //aluguel já finalizado
+
+        const delay = Math.ceil((now - returnDate) / (1000 * 60 * 60 * 24))
+        const delayFee = delay * exist.rows[0].pricePerDay
+
+        await db.query(`UPDATE rentals SET "returnDate" = $1, "delayFee"=$2 WHERE id=$3`, [date, delayFee, id])
 
         res.sendStatus(200)
     }

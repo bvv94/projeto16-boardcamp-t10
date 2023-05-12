@@ -42,6 +42,9 @@ export async function createRentals(req, res) {
         if ((existCustomer.rows.length === 0) || (existGame.rows.length === 0)) return res.sendStatus(400)
 
         //Validar se há jogos disponíveis
+        const stock = await db.query(`SELECT "stockTotal" FROM games WHERE id=$1`, [gameId])
+        const rented = await db.query(`SELECT * FROM rentals WHERE "gameId"=$1`, [gameId])
+        if (stock.rowCount >= rented.rowCount) return res.sendStatus(400)
 
         const pricePerDay = await db.query(`SELECT * FROM games WHERE id=$1`, [gameId])
         const originalPrice = daysRented * (pricePerDay.rows[0].pricePerDay)

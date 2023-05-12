@@ -44,7 +44,8 @@ export async function createRentals(req, res) {
         //Validar se há jogos disponíveis
         const stock = await db.query(`SELECT "stockTotal" FROM games WHERE id=$1`, [gameId])
         const rented = await db.query(`SELECT * FROM rentals WHERE "gameId"=$1`, [gameId])
-        if (stock.rowCount >= rented.rowCount) return res.sendStatus(400)
+
+        if (stock.rows[0].stockTotal <= rented.rows.length) return res.sendStatus(400)
 
         const pricePerDay = await db.query(`SELECT * FROM games WHERE id=$1`, [gameId])
         const originalPrice = daysRented * (pricePerDay.rows[0].pricePerDay)
@@ -72,7 +73,7 @@ export async function returnRental(req, res) {
 
         if (returnDate !== null) return res.sendStatus(400) //aluguel já finalizado
 
-        const delay = Math.ceil((now - returnDate) / (1000 * 60 * 60 * 24))
+        const delay = Math.ceil((date - returnDate) / (1000 * 60 * 60 * 24))
         const delayFee = delay * exist.rows[0].pricePerDay
 
         await db.query(`UPDATE rentals SET "returnDate" = $1, "delayFee"=$2 WHERE id=$3`, [date, delayFee, id])

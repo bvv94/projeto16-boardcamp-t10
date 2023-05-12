@@ -63,11 +63,12 @@ export async function returnRental(req, res) {
     try {
         const exist = await db.query(`SELECT * FROM rentals WHERE id=$1`, [id])
         if (exist.rowCount === 0) return res.sendStatus(404) //se id de aluguel existe
-        if (exist.rows.returnDate !== null) return res.sendStatus(400) //aluguel já finalizado
+        if (exist.rows[0].returnDate !== null) return res.sendStatus(400) //aluguel já finalizado
 
+        const date = new Date()
+        await db.query(`UPDATE rentals SET "returnDate" = $1 WHERE id=$2`, [date, id])
 
-
-
+        res.sendStatus(200)
     }
     catch (err) {
         res.status(500).send(err.message)

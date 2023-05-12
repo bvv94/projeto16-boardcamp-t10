@@ -41,6 +41,8 @@ export async function createRentals(req, res) {
         const existGame = await db.query(`SELECT * FROM games WHERE id=$1`, [gameId])
         if ((existCustomer.rows.length === 0) || (existGame.rows.length === 0)) return res.sendStatus(400)
 
+        //Validar se há jogos disponíveis
+
         const pricePerDay = await db.query(`SELECT * FROM games WHERE id=$1`, [gameId])
         const originalPrice = daysRented * (pricePerDay.rows[0].pricePerDay)
 
@@ -56,7 +58,15 @@ export async function createRentals(req, res) {
 }
 
 export async function returnRental(req, res) {
+    const { id } = req.params
+
     try {
+        const exist = await db.query(`SELECT * FROM rentals WHERE id=$1`, [id])
+        if (exist.rowCount === 0) return res.sendStatus(404) //se id de aluguel existe
+        if (exist.rows.returnDate !== null) return res.sendStatus(400) //aluguel já finalizado
+
+
+
 
     }
     catch (err) {
@@ -65,8 +75,16 @@ export async function returnRental(req, res) {
 }
 
 export async function deleteRental(req, res) {
-    try {
+    const { id } = req.params
 
+    try {
+        const exist = await db.query(`SELECT * FROM rentals WHERE id=$1`, [id])
+        if (exist.rowCount === 0) return res.sendStatus(404) //se id de aluguel existe
+        if (exist.rows[0].returnDate === null) return res.sendStatus(400) //aluguel não está finalizado
+
+        await db.query(`DELETE FROM rentals WHERE id=$1`, [id])
+
+        res.sendStatus(200)
     }
     catch (err) {
         res.status(500).send(err.message)
